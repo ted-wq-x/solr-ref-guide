@@ -207,7 +207,7 @@ solr脚本允许运行zk的相关的子命令
 
 在使用这些命令之前，必须已经初始化solr和zookeeper实例，zookeeper一旦初始化之后，solr就不需要运行了，但任然能够运行这些命令。
 
-### 上传配置
+### 上传配置Set
 
 使用`zk upconfig` 命令上传配置到zookeeper。
 
@@ -220,7 +220,73 @@ solr脚本允许运行zk的相关的子命令
 举个 :chestnut:
 
 `bin/solr zk upconfig -z 111.222.333.444:2181 -n mynewconfig -d /path/to/configset`
-          
+   
+注意：这个例子不会自动的重新载入配置文件到zk，当文件发生变化时。具体如何reload，还是看文档吧！      
                                       
+### 下载配置Set
 
-                            
+使用`zk downconfig`命令下载。
+
+以下参数都是必须的
+
+| 参数 | 描述 | 例子 |
+| ---- | :---- | ----- |  
+| -n <name> |在zk中的configs节点下配置集合（可以理解为文件夹，但不是）的名称|-n myconfig|
+| -d <configset dir> |配置文件准备存放的位置，如果只提供文件夹名称，则默认在$SOLR_HOME/server/solr/configsets下|-d /path/to/configset/source|  
+| -z <zkHost> | zk的地址，如果在脚本文件中配置了，可以忽略|-z 123.321.23.43:2181|
+ 
+ 举个 :chestnut:
+ 
+`bin/solr zk downconfig -z 111.222.333.444:2181 -n mynewconfig -d /path/to/configset`           
+
+友善提示：配置文件以版本的方式保存。
+
+### Copy between Local Files and ZooKeeper znodes
+
+使用`zk cp`命令在ZooKeeper节点和本地硬盘之间传输文件和目录。此命令将从本地驱动器复制到ZooKeeper，从ZooKeeper到本地驱动器或从ZooKeeper到ZooKeeper 
+
+| 参数 | 描述 | 例子 |
+| ---- | :---- | ----- |
+| -r |可选参数。递归拷贝|-r|
+| <src> |源地址，如果是zk，使用zk:前缀；如果是本地文件，使用file:前缀|file:/Users/apache/configs/src|
+| <dest> |目标地址，同样需要前缀|zk:/configs/myconfigs/solrconfig.xml|
+| -z <zkHost> |zk地址|-z 123.321.23.43:2181|
+
+### Remove a znode from ZooKeeper
+
+使用`zk rm`命令删除zookeeper的节点
+
+| 参数 | 描述 | 例子 |
+| ---- | :---- | ----- |
+| -r | 可选的，递归删除|-r|
+| <path> | zookeeper的路径，父节点或者叶子节点，无法删除/和/zookeeper节点，默认为zookeeper节点，zk:不是必须的|/configs/myconfigset|
+| -z <zkHost> | zk的地址，如果在脚本文件中配置了，可以忽略|-z 123.321.23.43:2181|
+
+### Move One ZooKeeper znode to Another (Rename)
+
+使用`zk mv`命令移动（重命名）zk节点
+
+| 参数 | 描述 | 例子 |
+| ---- | :---- | ----- |
+| <src> |重命名的节点，默认前缀为zk:|/configs/oldconfigset|
+| <dest> |新节点的名称，默认前缀为zk:|/configs/newconfigset|
+| -z <zkHost> | zk的地址，如果在脚本文件中配置了，可以忽略|-z 123.321.23.43:2181|
+
+### List a ZooKeeper znode’s Children
+
+使用`zk ls`列出节点下的子节点
+
+| 参数 | 描述 | 例子 |
+| ---- | :---- | ----- |
+| -r |可选的，递归列出|-r|
+| <path> |zk中的节点|/collections/mycollection|
+| -z <zkHost> | zk的地址，如果在脚本文件中配置了，可以忽略|-z 123.321.23.43:2181|
+
+### Create a znode (supports chroot)
+
+使用`zk mkroot`新建一个节点，这个命令支持的主要用例ZooKeeper的“chroot”概念。但是，它也可以用于创建任意路径。
+  
+| 参数 | 描述 | 例子 |
+| ---- | :---- | ----- |
+| <path> |在zk中要创建的节点|/solr|
+| -z <zkHost> | zk的地址，如果在脚本文件中配置了，可以忽略|-z 123.321.23.43:2181|                  
