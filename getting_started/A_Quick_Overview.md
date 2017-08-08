@@ -24,6 +24,8 @@ Solr是基于Apache Lucene项目，一个高性能，全功能的搜索引擎。
 这使Solr成为一个非常强大和可扩展的平台。
 
 最重要的是，这个关于大量应用的讲话不仅仅是假设：一些着名的互联网
-今天使用Solr的网站是Macy's，EBay和Zappo
+今天使用Solr的网站有Macy's，EBay和Zappo。
+
+当然如果数据量过大的话，es全家桶也是很好的选择。
 
 注：以上来自google翻译

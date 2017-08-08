@@ -33,4 +33,4 @@ bin/solr create -c <coreName>
 solr的例子都在安装目录的example/子目录下，在/bin目录下有一个post脚本，该脚本能将各种内容post到solr当中，包括solr原生的xml和json格式，csv文件，丰富文档的目录树，甚至是简短的网络爬网
 例如：`bin/post -c gettingstarted example/exampledocs/*.xml`
 
-## 查询的方法，参考小节[searching](../searching/README.md)
+## 查询的方法，参考小节[searching](../searching/readme.md)
