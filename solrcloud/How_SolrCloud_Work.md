@@ -196,7 +196,7 @@ soft-commits`来配置自动提交，以使最近的更新在搜索请求中可�
     
 `<statsCache class="org.apache.solr.search.stats.ExactStatsCache"/>`           
 
-###　Avoiding Distributed Deadlock
+### Avoiding Distributed Deadlock
 
 每个分片提供顶级查询请求，然后向所有其他分片发出子请求。注意要确保服务HTTP请求的最大线程数大于来自顶级客户端和其他分片的请求的总数量。
 如果不满足以上条件可能会导致分布式死锁。
