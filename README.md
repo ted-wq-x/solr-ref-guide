@@ -8,3 +8,25 @@
 本参考指南版本为 Solr 6.6.0。
 
 **还在进行中**
+
+由于我目前木有这样的需求，暂且不翻译
+
+- [ ] [solrCloud中的Cross Data Center Replication](solrcloud/CDCR.md)
+- [ ] [solrCloud中的Rule-based Replica Placement](solrcloud/Rule-based_Replica_Placement.md)
+
+
+根据我工作的需求，对我来说已经完成的翻译对应的章节，部分章节舍弃了。
+
+- [X] [Getting Started](getting_started)
+- [ ] [Documents, Fields, and Schema Design](documents_fields_schema)
+- [ ] [Understanding Analyzers, Tokenizers, and Filters](analyzers_tokenizers_filters)
+- [ ] [Indexing and Basic Data Operations](indexing)
+- [ ] [Searching](searching)
+- [ ] [The Well-Configured Solr Instance](config)
+- [ ] [Managing Solr](manageing_solr)
+- [X] [SolrCloud](solrcloud)
+- [ ] [Client APIs](client_api)
+
+
+
+
