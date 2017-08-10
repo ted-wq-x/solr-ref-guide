@@ -120,8 +120,8 @@ The base URL for all API calls is http://<hostname>:<port>/solr.
 |Key|Type|Required|Default|Description|
 |----|----|-----|-----|-----|
 |name|string|Yes||被创建的ConfigSet|
-|baseConfigSet|string|Yes|字面意思|
-|configSetProp.name=value|string|No|覆盖基本baseConfigSet的属性键值对|
+|baseConfigSet|string|Yes||字面意思|
+|configSetProp.name=value|string|No||覆盖基本baseConfigSet的属性键值对|
 
 ### Delete a ConfigSet
 
