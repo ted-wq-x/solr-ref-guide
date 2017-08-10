@@ -2,6 +2,7 @@
 
 ## Cluster Parameters
 
+||||
 |----|-----|-----|
 |numShards|默认值为1|存储hash文档的分片数目。每个分片必须有一个领导，每个领导可以有N个副本|
 
@@ -9,6 +10,7 @@
 
 这些设置在solr.xml中，但默认情况下，host和hostContext参数也可以设置系统属性。
 
+||||
 |----|-----|-----|
 |host|默认值为本机地址|如果自动查找的地址不正确，使用该参数覆盖|
 |hostPort|默认端口为使用`bin/solr -p <port>`指定或者为8983|使用命令指定就行了，别玩花的|
@@ -16,6 +18,7 @@
 
 ## SolrCloud Instance ZooKeeper Parameters
 
+||||
 |----|-----|-----|
 |zkRun|默认为`localhost:<hostPort+1000>`||
 |zkHost|没有默认值|ZooKeeper的主机地址。通常，这是一个逗号分隔的地址列表|
@@ -25,6 +28,7 @@ zkRun和zkHost使用系统属性设置。 默认情况下，zkClientTimeout在so
 
 ## SolrCloud Core Parameters
 
+||||
 |----|-----|-----|
 |shard|默认为根据numShards自动分配|指定分片的副本在那个core中|
 
