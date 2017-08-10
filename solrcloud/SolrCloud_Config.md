@@ -204,7 +204,7 @@ TODO
 |Key|Type|Required|Description|
 |----|----|-----|-----|
 |collection|string|Yes|被修改集合名称|
-|<attribute-name>|string|Yes|键值对，可以被修改的键值对有，maxShardsPerNode、maxShardsPerNode、autoAddReplicas、collection.configName、rule、snitch|
+|`<attribute-name>`|string|Yes|键值对，可以被修改的键值对有，maxShardsPerNode、maxShardsPerNode、autoAddReplicas、collection.configName、rule、snitch|
 
 ------------
 
