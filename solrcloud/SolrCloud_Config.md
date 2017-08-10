@@ -202,6 +202,7 @@ TODO
 一次可以编辑多个属性。更改这些值仅更新ZooKeeper上的z节点，它们不会更改集合的拓扑结构。例如，增加replicationFactor将不会自动为该集合添加更多副本，但将允许更多ADDREPLICA命令成功。也就是之后更改后续的节点。
 
 |Key|Type|Required|Description|
+|----|----|-----|-----|
 |collection|string|Yes|被修改集合名称|
 |<attribute-name>|string|Yes|键值对，可以被修改的键值对有，maxShardsPerNode、maxShardsPerNode、autoAddReplicas、collection.configName、rule、snitch|
 
@@ -214,6 +215,7 @@ TODO
 查询参数
 
 |Key|Type|Required|Description|
+|----|----|-----|-----|
 |name|string|Yes|被重新加载的集合名称|
 |async|string|No|请求ID跟踪此操作将被异步处理。|
 
@@ -240,6 +242,7 @@ shard拆分将会使得已经存在的shard拆分为2个且数据被写到新的
 查询参数
 
 |Key|Type|Required|Description|
+|----|----|-----|-----|
 |collection|string|Yes|被分割的集合名称|
 |shard|string|yes|被分割的shard名称|
 |ranges|string|No|以逗号分隔的十六进制hash范围列表，例如range = 0-1f4,1f5-3e8,3e9-5dc。|
@@ -256,6 +259,7 @@ shard拆分将会使得已经存在的shard拆分为2个且数据被写到新的
 `/admin/collections?action=CREATESHARD&shard=shardName&collection=name`
 
 参数：
+
 |Key|Type|Required|Description|
 |----|----|-----|-----|
 |collection|string|yes|集合名称|
