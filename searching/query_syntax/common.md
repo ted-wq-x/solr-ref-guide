@@ -5,18 +5,23 @@
 
 |参数      |描述                       |
 |---------|--------------------------|
-|[defType](#defType) |Selects the query parser to be used to process the query.|
-|[sort](#sort) |Sorts the response to a query in either ascending or descending order based on the response's score or another specified characteristic.|
-|[start](#start) |Specifies an offset (by default, 0) into the responses at which Solr should begin displaying content.|
-|[rows](#rows) |Controls how many rows of responses are displayed at a time (default value: 10)|
-|[fq](#fq) |Applies a filter query to the search results.|
-|[fl](#fl) |Limits the information included in a query response to a specified list of fields. The fields need to have been indexed as stored for this parameter to work correctly.|
-|[debug](#debug) |Request additional debugging information in the response. Specifying the `debug=timing` parameter returns just the timing information; specifying the `debug=results` parameter returns "explain" information for each of the documents returned; specifying the `debug=query` parameter returns all of the debug information.|
-|[explainOther](#explainOther) |Allows clients to specify a Lucene query to identify a set of documents. If non-blank, the explain info of each document which matches this query, relative to the main query (specified by the q parameter) will be returned along with the rest of the debugging information.|
-|[timeAllowed](#timeAllowed) |Defines the time allowed for the query to be processed. If the time elapses before the query response is complete, partial information may be returned.|
-|[omitHeader](#omitHeader) |Excludes the header from the returned results, if set to true. The header contains information about the request, such as the time the request took to complete. The default is false.|
-|[wt](#wt) |Specifies the Response Writer to be used to format the query response.|
-|[logParamsList](#logParamsList) |By default, Solr logs all parameters. Set this parameter to restrict which parameters are logged. Valid entries are the parameters to be logged, separated by commas (i.e., `logParamsList=param1,param2` ). An empty list will log no parameters, so if logging all parameters is desired, do not define this additional parameter at all.|
+|[defType](#defType) |要使用的查询解析器|
+|[sort](#sort) |根据响应的分数或其他指定的特征，按升序或降序对查询结果进行排序。|
+|[start](#start) |在Solr开始显示内容的响应中指定偏移量（默认为0）。即分页的偏移量一个意思|
+|[rows](#rows) |返回结果的条数（默认值：10）|
+|[fq](#fq) |对查询结果进行过滤|
+|[fl](#fl) |指定返回结果的字段|
+|[debug](#debug) |在响应中请求其他调试信息。指定`debug = timing`参数只返回时序信息; 指定`debug = results`参数为返回的每个文档返回“explain”信息; 指定`debug = query`参数返回所有调试信息。|
+|[explainOther](#explainOther) |允许客户端指定Lucene查询标识文档集合。若非空，将返回查询结果的每个文档的解释信息，和主查询（使用q参数查询）相关的debug信息|
+|[timeAllowed](#timeAllowed) |定义允许处理查询的时间。 如果未在该段时间之间完成查询响应，则可能只返回部分信息|
+|[segmentTerminateEarly](#segmentTerminateEarly)|Indicates that, if possible, Solr should stop collecting documents from each individual (sorted) segment once it can determine that any subsequent documents in that segment will not be candidates for the rows being returned. The default is false
+|
+                                                 
+                                                 
+|[omitHeader](#omitHeader) |如果设置为true，则从返回的结果中去除标题。标题包含有关请求的信息，例如请求完成的时间。 默认值为false|
+|[wt](#wt) |指定用于格式化查询响应的响应处理器|
+|[logParamsList](#logParamsList) |默认情况下，Solr记录所有参数。设置此参数以限制记录哪些参数。有效条目是要记录的参数，用逗号分隔（即`logParamsList = param1，param2`）。一个空列表将不记录任何参数，所以如果需要记录所有参数，那么根本不要定义这个附加参数|
+|[choParams](#choParams) |响应头中包含的请求参数，此参数控制响应头的该部分中包含的内容。值为none，all和explicit。 默认值explicit。|
 
 以下是这些参数的详细信息
 
@@ -33,17 +38,17 @@ defType=dismax
 ### <a name="sort"></a>sort 参数
 
 `sort` 参数会以升序(`asc`)或降序(`desc`) 来排列搜索结果。
-该参数用于数值或字母序内容上。其排序方向可以全小写或全大写来输入(即 `asc` 或 `ASC`)。
+该参数用于数值或字母序内容上。不区分大小写(即 `asc` 或 `ASC`)。
 
 Solr 可以根据文档的分数或某个字段的单个的
 indexed 或使用了 [DocValues](../../schema/docvalues.md) 的字段的值
 (即任何 `schema.xml` 中属性包括 `multiValued="false"` 并且 `docValues="true"` 或 `indexed="true"` 之一为真
  - 若字段没有启用 DocValues，将使用被索引的项在运行时来构建它们)
 来排序。
-给定：
 
+前提是：
 * 字段是非分词的(即字段没有分析器且其内容已被解析为 tokens ，这样会使得排序不一致)，或者
-* 字段使用了仅产生单个项的分析器(如 KeywordTokenizer)
+* 字段使用了一个的分析器(如 KeywordTokenizer)
 
 如果你想能够在字段上排序又希望将其分词，请在 schema.xml 中使用 `<copyField>` 指令来克隆字段。
 然后在该字段上搜索而在其克隆字段上排序。
@@ -86,7 +91,7 @@ indexed 或使用了 [DocValues](../../schema/docvalues.md) 的字段的值
 ### <a name="fq"></a>fq(Filter Query) 参数
 
 `fq` 参数定义了可用于限制可被返回的文档的超集的查询，而不会影响分数。
-它对于加速复杂的查询时很有用，因为以 `fq` 指定的查询会在主查询缓存之外被独立地进行缓存。
+它对于加速复杂的查询时很有用，_因为以 `fq` 指定的查询会在主查询缓存之外被独立地进行缓存_。
 当后续的查询使用相同的过滤器时，缓存命中，这样过滤的结果可以从缓存中很快返回。
 
 当使用 `fq` 参数时，记住以下几点：
@@ -113,11 +118,10 @@ fq=+popularity:[10 TO *] +section:0
 
 ### <a name="fl"></a>fl(Field List) 参数
 
-`fl` 参数限制查询响应中只包含指定字段列表中的信息。
-该参数的这些字段必须被所因为 stored 以使它能正确工作。
+`fl` 参数指定查询结果的返回字段。字段的属性必须有`stored="true"`或`docValues="true"`之一。
 
 字段列表可以以空格分隔或逗号分隔的字段名称的列表。
-字符串 `score` 可用于表示每个文档在特定查询中应该作为一个字段返回。
+字符串 `score` 可用查询返回中包含分数字段。
 通配符 `*` 选择了文档中所有 stored 的字段。
 你也可以给字段列表请求添加伪字段、函数和转换器。
 
@@ -150,7 +154,7 @@ fl=id,title,[explain]
 
 #### 字段别名
 
-你可以通过前缀一个 `<displayName>:` 来修改用在相应中某字段、函数或转换器的键的名称。如：
+你可以通过一个前缀 `<displayName>:` 来修改用在相应中某字段、函数或转换器的键的名称。如：
 
 ```
 fl=id,sales_price:price,secret_sauce:prod(price,popularity),why_score:[explainstyle=nl]
@@ -158,18 +162,30 @@ fl=id,sales_price:price,secret_sauce:prod(price,popularity),why_score:[explainst
 
 响应：
 
-```javascript
-"response":{"numFound":2,"start":0,"docs":[
-  {
-    "id":"6H500F0",
-    "secret_sauce":2100.0,
-    "sales_price":350.0,
-    "why_score":{
-      "match":true,
-      "value":1.052226,
-      "description":"weight(features:cache in 2) [DefaultSimilarity], result of:",
-      "details":[{
-...
+```json
+{
+  "response": {
+    "numFound": 2,
+    "start": 0,
+    "docs": [
+      {
+        "id": "6H500F0",
+        "secret_sauce": 2100.0,
+        "sales_price": 350.0,
+        "why_score": {
+          "match": true,
+          "value": 1.052226,
+          "description": "weight(features:cache in 2) [DefaultSimilarity], result of:",
+          "details": [
+            {
+              "...":"gg"
+            }
+          ]
+        }
+      }
+    ]
+  }
+}
 ```
 
 ### <a name="debug"></a>debug 参数
@@ -202,8 +218,7 @@ q=supervillians&debugQuery=on&explainOther=id:juggernaut
 
 ### <a name="timeAllowed"></a>timeAllowed 参数
 
-该参数指定了对搜索完成所允许的毫秒值的时间量。
-若该时间在搜索完成前到期，则任何已有的部分的结果将被返回。
+定义允许处理查询的时间。 如果未在该段时间之间完成查询响应，则可能只返回部分信息。单位是毫秒。
 
 ### <a name="omitHeader"></a>omitHeader 参数
 
@@ -262,3 +277,17 @@ logParamsList=q,fq
 若不想记录任何字段，你可以设置 `logParamsList` 为空 (即， `logParamsList=`)。
 
 > 该参数不仅适用于查询请求，也适用于任何对 Solr 的请求。
+
+### <a name="echoParams"></a>echoParams 参数
+
+该参数控制着返回头中包含那些请求参数。
+
+下面的表解释每个选项的意思
+
+|Value|Meaning
+|------|---------|
+|explicit|这是默认值。只有包含在实际请求中的参数加上_参数（这是64位数字时间戳）才会被添加到响应头的params部分。
+|all|所有参数|
+|none|没有任何参数|
+
+

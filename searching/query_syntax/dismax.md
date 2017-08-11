@@ -1,8 +1,7 @@
 # DisMax 查询解析器
 
-DisMax 查询解析器设计用于处理由用户输入的简单短语(不需要复杂的语法)
-且基于每个字段的显著性使用不同的权重(加权)搜索跨多个字段的独立的项。
-额外的选项可让用户能够基于特定于每个使用场景(和用户输入独立)的规则来影响分数。
+DisMax 查询解析器设计用于处理由用户输入的简单短语(无复杂的语法)，并根据每个字段的重要性，在多个字段间使用不同的权重搜索词语。
+额外的选项可让用户能够基特定场景(和用户输入独立)规则来影响分数。
 
 通常 DisMax 查询解析器的接口更像 Google 而不像 “标准” Solr 请求处理器的接口。
 这种相似性让 DisMax 适用于很多消费型应用。
@@ -18,16 +17,16 @@ DisMax 查询解析器负责使用包含跨字段和由用户指定的加权因�
 你是否对 DisMax 名称背后的技术概念感兴趣？
 DisMax 表示 Maximum Disjunction。下面是 Maximum Disjunction 或 DisMax 查询的一个定义：
 
-> 一个产生由其子查询生成的文档的并集的查询，
-> 并且它给每个文档以该文档由任何子查询生成的最大分数来评分，
-> 外加一个对任何额外匹配的子查询的僵局决胜增量。
+> A query that generates the union of documents produced by its subqueries, and that scores each document
+  with the maximum score for that document as produced by any subquery, plus a tie breaking increment for
+  any additional matching subqueries.
 
-不管你是否能记住这个解释，你只需要记住 DisMax 请求处理器主要设计为易用且能接收几乎任何输入而不会返回错误。
+不管你是否能记住这个解释，你只需要记住 DisMax 请求处理器主要设计为易于使用，并接受几乎任何输入，而不返回错误。
 
 ## DisMax 参数
 
 除了通用的请求参数、高亮参数和简单的 facet 参数外， DisMax 查询解析器还支持以下参数。
-想标准查询解析器一样， DisMax 查询解析器允许在 `solrconfig.xml` 中指定默认参数，
+像标准查询解析器一样， DisMax 查询解析器允许在 `solrconfig.xml` 中指定默认参数，
 或者在请求中由查询时的值进行覆盖。
 
 |参数    |描述                        |
@@ -35,35 +34,29 @@ DisMax 表示 Maximum Disjunction。下面是 Maximum Disjunction 或 DisMax 查
 |[q](#q)|定义该查询的原始输入字符串。     |
 |[q.alt](#q-alt)|当 `q` 参数没有被使用时，调用标准查询解析器并定义查询字符串。|
 |[qf](#qf)|查询字段：指定执行查询时需查询索引中的哪些字段。若不存在，默认为 `df`。 |
-|[mm](#mm)|最小“应当”匹配：指定查询中最小应当匹配的子句的数量。若查询或 `solrconfig.xml` 中没有指定 `mm` 参数，高效的 `q.op` 的值(不管是查询中、还是 `solrconfig.xml` 中的默认值，还是来自 `schema.xml` 中 的 `defaultOperator` 选项)。若 `q.op` 是高效的 `AND`，则 `mm=100%`；若 `q.op` 是 `OR`,则 `mm=1`。希望强制其遗留行为的用户需要在 `solrconfig.xml` 中给 `mm` 设置一个默认值。用户应该将它添加为其请求处理器的配置的默认值。这个参数允许在表达式中混合空格(如`" 3 < -25% 10 < -3\n", " \n-25%\n", " \n3\n "`)。 |
+|[mm](#mm)|最小“应”匹配：指定查询中必须匹配的最小子句数。若在查询语句中或 `solrconfig.xml` 中没有指定 `mm` 参数，有效的 `q.op` 的值(不管是查询中、还是 `solrconfig.xml` 中的默认值，还是来自 `schema.xml` 中的 `defaultOperator` 选项)。若 `q.op` 是高效的 `AND`，则 `mm=100%`；若 `q.op` 是 `OR`,则 `mm=1`。希望强制其遗留行为的用户需要在 `solrconfig.xml` 中给 `mm` 设置一个默认值。用户应该将它添加为其请求处理器的配置的默认值。这个参数允许在表达式中混合空格(如`" 3 < -25% 10 < -3\n", " \n-25%\n", " \n3\n "`)。 |
 |[pf](#pf)|短语字段：对在 `q` 参数中所有词项相邻地出现的文档加权其分数。 |
-|[ps](#ps)|短语 slop： 指定两个词项可以能够匹配指定短语的可分离的位置的数量。|
-|[qs](#qs)|查询短语 slop：指定两个词项可以能够匹配指定短语的可分离的位置的数量。用于 `qf` 参数|
-|[tie](#tie)|僵局决胜：指定一个浮点值(用过远小于 1)用作 DisMax 查询的僵局决胜分值。 |
+|[ps](#ps)|短语 slop： 指定两个术语可以分开以匹配指定短语的位置数|
+|[qs](#qs)|查询短语Slop：指定两个术语可以分开以匹配指定短语的位置数。 与qf参数特别配合使用。|
+|[tie](#tie)|Tie Breaker：在DisMax查询中指定一个float值（应该远远小于1）作为tiebreaker使用。 默认值：0.0 |
 |[bq](#bq)|加权查询：指定一个因子，当考虑一个匹配时哪个词项或短语应被 "加权" 其重要性。 |
 |[bf](#bf)|加权函数： 指定被应用于加权的函数(查看函数查询相关细节) |
 
 ### <a name="q"><a>参数 `q`
 
-The `q` parameter defines the main "query" constituting the essence of the search. The parameter supports raw
-input strings provided by users with no special escaping. The + and - characters are treated as "mandatory" and
-"prohibited" modifiers for terms. Text wrapped in balanced quote characters (for example, "San Jose") is treated
-as a phrase. Any query containing an odd number of quote characters is evaluated as if there were no quote
-characters at all.
+`q`参数定义了构成搜索的主要“查询”。参数支持原始输入字符串，没有特殊的转义。‘+’和‘-’被视为“强制”和“禁止”修饰符。字符串使用双引号包裹视为一个短语(for example, "San Jose")。 奇数个的引号视为没有引号。
 
-> The `q` parameter does not support wildcard characters such as `*`.
+> q参数不支持通配符，例如‘*’。
 
 ### <a name="q-alt"><a>参数 `q.alt`
+6
+当主查询参数q没有指定或为空时,使用`q.alt`参数定义一个查询语句 (默认情况下使用标准解析器)。
+当你需要一个query去匹配所有文档 (don't forget `&rows=0` for that one!) 为了得到faceting统计，此时`q.alt` 参数将派上用场。
 
-If specified, the `q.alt` parameter defines a query (which by default will be parsed using standard query parsing
-syntax) when the main q parameter is not specified or is blank. The `q.alt` parameter comes in handy when you
-need something like a query to match all documents (don't forget `&rows=0` for that one!) in order to get
-collection-wise faceting counts.
 
 ### <a name="qf"><a>参数 `qf`
 
-The qf parameter introduces a list of fields, each of which is assigned a boost factor to increase or decrease that
-particular field's importance in the query. For example, the query below:
+权重的意思，看下面的例子就理解了:
 
 ```
 qf="fieldOne^2.3 fieldTwo fieldThree^0.4"
@@ -197,27 +190,25 @@ Normal results for the word "video" using the StandardRequestHandler with the de
 http://localhost:8983/solr/techproducts/select?q=video&fl=name+score
 ```
 
-The "dismax" handler is configured to search across the text, features, name, sku, id, manu, and cat fields all
-with varying boosts designed to ensure that "better" matches appear first, specifically: documents which match
-on the name and cat fields get higher scores.
-
+"dismax"处理器被配置为跨字段的，为了确保能够获得更好的匹配结果。
+ 
 ```
 http://localhost:8983/solr/techproducts/select?defType=dismax&q=video
 ```
 
-Note that this instance is also configured with a default field list, which can be overridden in the URL.
+请注意，此实例还配置了默认字段列表，可以在URL中覆盖该列表。
 
 ```
 http://localhost:8983/solr/techproducts/select?defType=dismax&q=video&fl=*,score
 ```
 
-You can also override which fields are searched on and how much boost each field gets.
+你可以自定义搜索哪些字段并且设置权重
 
 ```
 http://localhost:8983/solr/techproducts/select?defType=dismax&q=video&qf=features^20.0+text^0.3
 ```
 
-You can boost results that have a field that matches a specific value.
+提可以提供特定字段的权重
 
 ```
 http://localhost:8983/solr/techproducts/select?defType=dismax&q=video&bq=cat:electronics^5.0
@@ -245,8 +236,7 @@ http://localhost:8983/solr/techproducts/select?defType=dismax&q=belkin+ipod+gibb
 http://localhost:8983/solr/techproducts/select?defType=dismax&q=belkin+ipod+apple
 ```
 
-Just like the StandardRequestHandler, it supports the debugQuery option to viewing the parsed query, and the
-score explanations for each document.
+就像StandardRequestHandler一样，它支持debugQuery选项来查看解析的查询以及每个文档的分数说明。
 
 ```
 http://localhost:8983/solr/techproducts/select?defType=dismax&q=belkin+ipod+gibberish&debugQuery=true

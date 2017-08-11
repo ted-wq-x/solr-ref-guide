@@ -2,9 +2,8 @@
 
 Solr 默认的查询解析器为 "lucene" 解析器。
 
-这个标准查询解析器的优点是它支持一个健壮的非常直觉的语法来允许你创建多种结构化的查询。
-其最大的缺点是相较 [DisMax](./dismax.md) 这样设计用于尽可能少抛出错误的查询解析器而言，
-它对语法错误缺少容忍力。
+这个标准查询解析器的优点是它支持直观且强大的语法来允许你创建多种结构化的查询。
+其最大的缺点是相较 [DisMax](./dismax.md) 这样设计用于尽可能少的丢失错误。
 
 本节包含的内容有：
 
@@ -28,6 +27,7 @@ Solr 默认的查询解析器为 "lucene" 解析器。
 |q    |使用标准查询语法定义一个查询。该参数是必需的。|
 |q.op |指定查询表达式的默认操作符，覆盖 `schema.xml` 中定义的默认操作符。可选值为 `AND` 或 `OR`。 |
 |df   |指定默认字段，覆盖 `schema.xml` 中定义的默认字段。|
+|sow  |分割空格：如果设置为false，则将单独提供空格分隔符给文本分析解析。例如，多字同义词和带状疱疹 默认为true：为每个单独的空格分隔项分别调用文本分析|。
 
 这些参数的默认值在 `solrconfig.xml` 中指定，或者在请求时被查询时的值所覆盖。
 
@@ -118,7 +118,8 @@ Solr 支持多种词项修饰符来根据具体搜索需求来添加灵活性或
 Solr 的标准查询解析器支持单个词项中通配单个或多个字符的搜索。
 通配符可应用于单词项，而不能应用于搜索短语。
 
-|通配符搜索类型  |特殊字符| 示例                           |
+|通配符搜索类型  |特殊字符| 示例 |
+|-------|-----|-----|
 |单个字符(匹配单个字符)|? |搜索字符串 `te?t` 能够匹配 `test` 和 `text`  |
 |多个字符(匹配零或多个顺序字符)|* |通配符搜索 `tes*` 能够匹配 `test`、`testing`和 `tester`。<br>你也可以在词项中间使用通配符，如 `te*t`，它能匹配`test`和 `text`。<br>`*est`能匹配 `pest`和 `test`。 |
 
@@ -138,19 +139,17 @@ Solr 的标准查询解析器支持基于 Levenshtein 距离和编辑距离的�
 
 #### 邻近搜索
 
-A proximity search looks for terms that are within a specific distance from one another.
+邻近搜索寻找在彼此特定距离内的词语。
 
-To perform a proximity search, add the tilde character ~ and a numeric value to the end of a search phrase. For
-example, to search for a "apache" and "jakarta" within 10 words of each other in a document, use the search:
-
+要执行邻近搜索，请将波形符号〜和数值添加到搜索短语的末尾。
+例如，要在文档中的10个词中搜索“apache”和“jakarta”，请使用搜索
 ```
 "jakarta apache"~10
 ```
 
-The distance referred to here is the number of term movements needed to match the specified phrase. In the
-example above, if "apache" and "jakarta" were 10 spaces apart in a field, but "apache" appeared before "jakarta",
-more than 10 term movements would be required to move the terms together and position "apache" to the right
-of "jakarta" with a space in between.
+这里提到的距离是匹配指定短语所需的词语移动的数量。
+在上面的例子中，如果“apache”和“jakarta”在一个字段中分开了10个空格，
+而“apache”出现在“jakarta”之前，则需要超过10个词语移动，将“apache”移动到 “jakarta”之间有一个空间的权利。
 
 #### 范围搜索
 
@@ -269,22 +268,19 @@ OR 操作符链接了两个项，并找到至少匹配其中一项的文档。
 
 ### 布尔操作符 `+`
 
-The + symbol (also known as the "required" operator) requires that the term after the + symbol exist somewhere
-in a field in at least one document in order for the query to return a match.
++符号（也称为“必需”运算符），+后面的词语必须存在于文档当中。
 
-For example, to search for documents that must contain "jakarta" and that may or may not contain "lucene," use
-the following query:
+下面的例子表示查找含有”jakarta“，包含或不包含”lucene“的文档：
 
 `+jakarta lucene`
 
-> This operator is supported by both the standard query parser and the DisMax query parser.
+> DisMax和standard解析器都支持该操作符。
 
 ### 布尔操作符 `AND(&&)`
 
-The AND operator matches documents where both terms exist anywhere in the text of a single document. This is
-equivalent to an intersection using sets. The symbol && can be used in place of the word AND.
+AND运算符匹配文档，其中两个术语都存在于单个文档的文本中的任何位置。 这相当于使用集合的交集。 符号&&可以用于代替单词AND。
 
-To search for documents that contain "jakarta apache" and "Apache Lucene," use either of the following queries:
+要搜索包含“jakarta apache”和“Apache Lucene”的文档，请使用以下任一查询：
 
 `"jakarta apache" AND "Apache Lucene"`
 
@@ -295,8 +291,7 @@ To search for documents that contain "jakarta apache" and "Apache Lucene," use e
 The NOT operator excludes documents that contain the term after NOT. This is equivalent to a difference using
 sets. The symbol ! can be used in place of the word NOT.
 
-The following queries search for documents that contain the phrase "jakarta apache" but do not contain the
-phrase "Apache Lucene":
+以下查询搜索包含短语“jakarta apache”的文档，但不包含短语“Apache Lucene”：
 
 `"jakarta apache" NOT "Apache Lucene"`
 
@@ -304,10 +299,9 @@ phrase "Apache Lucene":
 
 ### 布尔操作符 `-`
 
-The - symbol or "prohibit" operator excludes documents that contain the term after the - symbol.
+- 符号或“prohibit”运算符排除包含符号后面的术语的文档。
 
-For example, to search for documents that contain "jakarta apache" but not "Apache Lucene," use the following
-query:
+例如，要搜索包含“jakarta apache”而不是“Apache Lucene”的文档，请使用以下查询：
 
 `"jakarta apache" -"Apache Lucene"`
 
@@ -339,7 +333,7 @@ Lucene/Solr 支持使用括号将子句分组以形成子查询。这在你想�
 
 `title:(+return +"pink panther")`
 
-## <a name="difference"></a>Lucene 查询解析其和 Solr 标准查询解析器的不同点
+## <a name="difference"></a>Lucene 查询解析器和 Solr 标准查询解析器的不同点
 
 Solr 的标准查询解析器和 Lucene 查询解析器在以下方面有差异:
 
@@ -347,7 +341,7 @@ Solr 的标准查询解析器和 Lucene 查询解析器在以下方面有差异:
     * `field:[* TO 100]` 找到所有小于或等于 100 的字段值
     * `field:[100 TO *]` 找到所有大于或等于 100 的字段值
     * `field:[* TO *]` 找到所有字段值
-* 纯反查询(所有子句都是禁止子句)是允许的(金作为顶层子句)
+* 纯反查询(所有子句都是禁止子句)是允许的(作为顶层子句)
     * `-inStock:false` 找到所有`inStock` 不为 `false` 的字段值
     * `-field:[* TO *]` 找到所有该 field 没有值的文档
 * 一个到 `FunctionQuery` 语法的钩子。如果函数中包含括号，你需要使用引号来包装该函数，如下例所示：
